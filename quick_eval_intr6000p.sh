@@ -54,7 +54,7 @@ GT_FILE="$GT_ROOT/$DIFFICULTY/${SEQUENCE}.txt"
 
 # Output paths
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-OUTPUT_DIR="$SCRIPT_DIR/quick_eval_${DIFFICULTY}_${SEQUENCE}_${TIMESTAMP}"
+OUTPUT_DIR="$SCRIPT_DIR/output/quick_eval_${DIFFICULTY}_${SEQUENCE}_${TIMESTAMP}"
 TRAJ_FILE="$OUTPUT_DIR/trajectory.txt"
 LOG_FILE="$OUTPUT_DIR/orbslam.log"
 EVO_STATS="$OUTPUT_DIR/evo_statistics.txt"

@@ -89,7 +89,7 @@ TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 if [[ -n "$CUSTOM_OUTPUT_DIR" ]]; then
     OUTPUT_ROOT="$CUSTOM_OUTPUT_DIR"
 else
-    OUTPUT_ROOT="$SCRIPT_DIR/batch_eval_results_${TIMESTAMP}"
+    OUTPUT_ROOT="$SCRIPT_DIR/output/batch_eval_results_${TIMESTAMP}"
 fi
 SUMMARY_FILE="$OUTPUT_ROOT/evaluation_summary.txt"
 RESULTS_CSV="$OUTPUT_ROOT/results.csv"
