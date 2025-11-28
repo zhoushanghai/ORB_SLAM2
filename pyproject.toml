@@ -6,4 +6,6 @@ readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
     "evo>=1.16.0",
+    "matplotlib>=3.7.5",
+    "pyqt5>=5.15.11",
 ]

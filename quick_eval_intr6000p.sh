@@ -69,6 +69,8 @@ fi
 
 # Ensure uv is in PATH
 export PATH="$HOME/.local/bin:$PATH"
+export MPLBACKEND=Agg
+export EVO_PLOT_BACKEND=Agg
 
 # Validate inputs
 if [[ ! -d "$SEQ_PATH" ]]; then
@@ -123,6 +125,7 @@ log_info "Step 2: Evaluating with EVO..."
 export PATH="$HOME/.local/bin:$PATH"
 
 echo 'Running EVO APE...'
+export MPLBACKEND=Agg
 uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
     -r trans_part \
     --save_results "$OUTPUT_DIR/ape_results.zip" \
@@ -132,6 +135,7 @@ uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
 }
 
 echo 'Generating plots...'
+export MPLBACKEND=Agg
 uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
     -r trans_part \
     --plot --plot_mode xyz -as \
