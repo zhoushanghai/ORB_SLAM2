@@ -1,0 +1,10 @@
+# Easy 难度：
+./quick_eval_intr6000p.sh easy carwelding2
+./quick_eval_intr6000p.sh easy factory1
+./quick_eval_intr6000p.sh easy hospital
+# Medium 难度：
+./quick_eval_intr6000p.sh medium factory2
+./quick_eval_intr6000p.sh medium factory6
+# Hard 难度：
+./quick_eval_intr6000p.sh hard amusement1
+./quick_eval_intr6000p.sh hard amusement2
