@@ -22,22 +22,14 @@ log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
 # Check arguments
-if [[ $# -lt 2 || $# -gt 3 ]]; then
-    log_error "Usage: $0 <difficulty> <sequence> [nodisplay]"
+if [[ $# -ne 2 ]]; then
+    log_error "Usage: $0 <difficulty> <sequence>"
     echo "Example: $0 easy carwelding2"
-    echo "Example without GUI: $0 easy carwelding2 nodisplay"
     echo "Available sequences:"
     echo "  easy: carwelding2, factory1, hospital"
     echo "  medium: factory2, factory6"
     echo "  hard: amusement1, amusement2"
     exit 1
-fi
-
-# Optional third argument to disable GUI display
-SHOW_GUI=1
-if [[ $# -eq 3 && "$3" == "nodisplay" ]]; then
-    SHOW_GUI=0
-    log_info "Running without GUI (using virtual framebuffer)"
 fi
 
 DIFFICULTY="$1"
@@ -51,7 +43,7 @@ DATASET_ROOT="$SCRIPT_DIR/INTR6000P"
 # Configuration
 ORBSLAM_EXEC="$ORBSLAM_ROOT/Examples/Monocular/mono_euroc"
 VOCABULARY="$ORBSLAM_ROOT/Vocabulary/ORBvoc.txt"
-CAMERA_CONFIG="$DATASET_ROOT/tartanair.yaml"
+CAMERA_CONFIG="$DATASET_ROOT/tartanair_1.yaml"
 GT_ROOT="$DATASET_ROOT/INTR6000P_GT_POSES"
 
 # Paths for this sequence
@@ -105,24 +97,7 @@ echo ""
 log_info "Step 1: Running ORB_SLAM2..."
 cd "$ORBSLAM_ROOT"
 
-# Use virtual framebuffer if GUI is disabled
-if [[ $SHOW_GUI -eq 0 ]]; then
-    XVFB_CMD="xvfb-run -a"
-    export DISPLAY=:99
-    export MPLBACKEND=Agg
-    
-    # Save current evo plot backend and set to Agg for headless mode
-    EVO_ORIGINAL_BACKEND=$(uv run --with evo evo_config show | grep '"plot_backend"' | awk -F'"' '{print $4}')
-    uv run --with evo evo_config set plot_backend Agg > /dev/null 2>&1
-    
-    log_info "Set DISPLAY=$DISPLAY and MPLBACKEND=Agg for headless EVO plotting"
-    log_info "Launching ORB_SLAM2 with virtual framebuffer (no GUI)"
-else
-    XVFB_CMD=""
-    EVO_ORIGINAL_BACKEND=""
-fi
-
-${XVFB_CMD} "$ORBSLAM_EXEC" "$VOCABULARY" "$CAMERA_CONFIG" "$IMAGES_PATH" "$TIMESTAMPS_FILE" > "$LOG_FILE" 2>&1 || {
+"$ORBSLAM_EXEC" "$VOCABULARY" "$CAMERA_CONFIG" "$IMAGES_PATH" "$TIMESTAMPS_FILE" > "$LOG_FILE" 2>&1 || {
     log_error "ORB_SLAM2 failed! Check log: $LOG_FILE"
     exit 1
 }
@@ -157,11 +132,9 @@ uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
 }
 
 echo 'Generating plots...'
-MPLBACKEND=Agg uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
-    -r trans_part \
-    --plot --plot_mode xyz -as \
-    --save_plot "$OUTPUT_DIR/trajectory_plot.png" \
-    >> "$EVO_STATS" 2>&1 || true
+log_info "Running: uv run evo_ape tum \"$GT_FILE\" \"$TRAJ_FILE\" -r trans_part --plot --plot_mode xyz -as"
+uv run evo_ape tum "$GT_FILE" "$TRAJ_FILE" -r trans_part --plot --plot_mode xyz -as || true
+
 
 log_success "EVO evaluation completed"
 echo ""
@@ -182,18 +155,12 @@ log_info "  - Trajectory: $TRAJ_FILE"
 log_info "  - EVO stats: $EVO_STATS"
 log_info "  - ORB_SLAM2 log: $LOG_FILE"
 log_info "  - Results: $OUTPUT_DIR/ape_results.zip"
-if [[ -f "$OUTPUT_DIR/trajectory_plot.png" ]]; then
-    log_info "  - Plot: $OUTPUT_DIR/trajectory_plot.png"
+if [[ -f "$OUTPUT_DIR/trajectory_plot.pdf" ]]; then
+    log_info "  - Plot: $OUTPUT_DIR/trajectory_plot.pdf"
 fi
 echo ""
 
 log_success "Evaluation complete!"
-
-# Restore evo plot backend if it was changed
-if [[ -n "$EVO_ORIGINAL_BACKEND" ]]; then
-    uv run --with evo evo_config set plot_backend "$EVO_ORIGINAL_BACKEND" > /dev/null 2>&1
-    log_info "Restored evo plot backend to $EVO_ORIGINAL_BACKEND"
-fi
 
 
 # Easy 难度：
@@ -206,5 +173,3 @@ fi
 # Hard 难度：
 # ./quick_eval_intr6000p.sh hard amusement1
 # ./quick_eval_intr6000p.sh hard amusement2
-
-# ./quick_eval_intr6000p.sh easy factory1 nodisplay
