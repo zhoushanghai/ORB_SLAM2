@@ -131,9 +131,10 @@ uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
     exit 1
 }
 
-echo 'Generating plots...'
-log_info "Running: uv run evo_ape tum \"$GT_FILE\" \"$TRAJ_FILE\" -r trans_part --plot --plot_mode xyz -as"
-uv run evo_ape tum "$GT_FILE" "$TRAJ_FILE" -r trans_part --plot --plot_mode xyz -as || true
+echo 'Generating and saving plots...'
+PLOT_FILE="$OUTPUT_DIR/trajectory_plot.png"
+log_info "Running: uv run evo_ape tum \"$GT_FILE\" \"$TRAJ_FILE\" -r trans_part --plot --plot_mode xyz --save_plot \"$PLOT_FILE\" --serialize_plot \"$OUTPUT_DIR/plot_data.zip\" -as"
+uv run evo_ape tum "$GT_FILE" "$TRAJ_FILE" -r trans_part --plot --plot_mode xyz --save_plot "$PLOT_FILE" --serialize_plot "$OUTPUT_DIR/plot_data.zip" -as || true
 
 
 log_success "EVO evaluation completed"
