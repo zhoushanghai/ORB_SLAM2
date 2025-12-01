@@ -123,9 +123,9 @@ log_info "Step 2: Evaluating with EVO..."
 
 export PATH="$HOME/.local/bin:$PATH"
 
-echo 'Running EVO APE...'
+echo 'Running EVO APE with Sim(3) alignment...'
 uv run --with evo evo_ape tum "$GT_FILE" "$TRAJ_FILE" \
-    -r trans_part \
+    -r trans_part -as \
     --save_results "$OUTPUT_DIR/ape_results.zip" \
     --verbose > "$EVO_STATS" 2>&1 || {
     log_error "EVO evaluation failed!"
