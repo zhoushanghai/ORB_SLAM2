@@ -489,4 +489,9 @@ vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
     return mTrackedKeyPointsUn;
 }
 
+void System::SetFailureVideoOutputDir(const std::string &outputDir)
+{
+    mpTracker->SetFailureVideoOutputDir(outputDir);
+}
+
 } //namespace ORB_SLAM

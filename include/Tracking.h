@@ -24,6 +24,7 @@
 
 #include<opencv2/core/core.hpp>
 #include<opencv2/features2d/features2d.hpp>
+#include<opencv2/videoio.hpp>
 
 #include"Viewer.h"
 #include"FrameDrawer.h"
@@ -39,6 +40,8 @@
 #include "System.h"
 
 #include <mutex>
+#include <deque>
+#include <string>
 
 namespace ORB_SLAM2
 {
@@ -73,6 +76,9 @@ public:
 
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
     void InformOnlyTracking(const bool &flag);
+
+    // Set the output directory for failure videos
+    void SetFailureVideoOutputDir(const std::string &outputDir);
 
 
 public:
@@ -214,6 +220,22 @@ protected:
     bool mbRGB;
 
     list<MapPoint*> mlpTemporalPoints;
+
+    // Video recording for tracking failure
+    struct FrameRecord {
+        cv::Mat frame;
+        double timestamp;
+    };
+    std::deque<FrameRecord> mFrameBuffer;  // Circular buffer for pre-failure frames
+    int mBufferSize;  // Number of frames to keep (3 seconds worth)
+    bool mbRecordingPostFailure;
+    int mPostFailureFrameCount;
+    int mPostFailureFrameLimit;
+    std::string mVideoOutputDir;
+    bool mbTrackingWasOK;  // Track previous state to detect transitions
+
+    void SaveFailureVideo(const std::string& outputPath);
+    void AddFrameToBuffer(const cv::Mat& frame, double timestamp);
 };
 
 } //namespace ORB_SLAM

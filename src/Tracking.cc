@@ -23,6 +23,7 @@
 
 #include<opencv2/core/core.hpp>
 #include<opencv2/features2d/features2d.hpp>
+#include<opencv2/videoio.hpp>
 
 #include"ORBmatcher.h"
 #include"FrameDrawer.h"
@@ -34,6 +35,7 @@
 #include"PnPsolver.h"
 
 #include<iostream>
+#include<ctime>
 
 #include<mutex>
 
@@ -145,6 +147,14 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         else
             mDepthMapFactor = 1.0f/mDepthMapFactor;
     }
+
+    // Initialize video recording parameters
+    mBufferSize = static_cast<int>(fps * 3);  // 3 seconds worth of frames
+    mPostFailureFrameLimit = static_cast<int>(fps * 3);  // Record 3 seconds after failure
+    mbRecordingPostFailure = false;
+    mPostFailureFrameCount = 0;
+    mVideoOutputDir = "";  // Will be set by System or externally
+    mbTrackingWasOK = false;
 
 }
 
@@ -416,6 +426,48 @@ void Tracking::Track()
 
         // Update drawer
         mpFrameDrawer->Update(this);
+
+        // Get rendered frame and add to buffer (always do this to maintain the buffer)
+        cv::Mat drawnFrame = mpFrameDrawer->DrawFrame();
+        if(!drawnFrame.empty())
+        {
+            AddFrameToBuffer(drawnFrame, mCurrentFrame.mTimeStamp);
+        }
+
+        // Detect transition from OK to LOST - start recording post-failure frames
+        if(mbTrackingWasOK && mState == LOST && !mVideoOutputDir.empty())
+        {
+            cout << "Tracking lost! Recording post-failure frames..." << endl;
+            mbRecordingPostFailure = true;
+            mPostFailureFrameCount = 0;
+        }
+
+        // If recording post-failure frames, check if we've recorded enough
+        if(mbRecordingPostFailure && mState == LOST)
+        {
+            mPostFailureFrameCount++;
+
+            if(mPostFailureFrameCount >= mPostFailureFrameLimit)
+            {
+                // Save the video with pre+post failure frames
+                cout << "Saving failure video (3s before + 3s after)..." << endl;
+
+                time_t now = time(0);
+                char timestamp[100];
+                strftime(timestamp, sizeof(timestamp), "%Y%m%d_%H%M%S", localtime(&now));
+                string videoPath = mVideoOutputDir + "/tracking_failure_" + string(timestamp) + ".mp4";
+
+                SaveFailureVideo(videoPath);
+
+                // Request shutdown after saving video
+                cout << "Video saved. Requesting system shutdown..." << endl;
+                mpSystem->Shutdown();
+                exit(0);
+            }
+        }
+
+        // Update tracking state
+        mbTrackingWasOK = (mState == OK);
 
         // If tracking were good, check if we insert a keyframe
         if(bOK)
@@ -1587,6 +1639,74 @@ void Tracking::InformOnlyTracking(const bool &flag)
     mbOnlyTracking = flag;
 }
 
+void Tracking::SetFailureVideoOutputDir(const std::string &outputDir)
+{
+    mVideoOutputDir = outputDir;
+    // Create output directory if it doesn't exist
+    if(!mVideoOutputDir.empty())
+    {
+        system(("mkdir -p " + mVideoOutputDir).c_str());
+    }
+}
+
+void Tracking::AddFrameToBuffer(const cv::Mat& frame, double timestamp)
+{
+    if(frame.empty())
+        return;
+
+    FrameRecord record;
+    record.frame = frame.clone();
+    record.timestamp = timestamp;
+
+    mFrameBuffer.push_back(record);
+
+    // If we're recording post-failure frames, keep up to 2 * mBufferSize frames (pre + post)
+    // Otherwise, keep only the last N frames (3 seconds for pre-failure buffer)
+    size_t maxSize = mbRecordingPostFailure ? (2 * mBufferSize) : mBufferSize;
+    while(mFrameBuffer.size() > maxSize)
+    {
+        mFrameBuffer.pop_front();
+    }
+}
+
+void Tracking::SaveFailureVideo(const std::string& outputPath)
+{
+    if(mFrameBuffer.empty())
+        return;
+
+    cout << "Saving tracking failure video to: " << outputPath << endl;
+
+    // Get frame properties from first frame
+    cv::Mat firstFrame = mFrameBuffer.front().frame;
+    int frameWidth = firstFrame.cols;
+    int frameHeight = firstFrame.rows;
+
+    // Create video writer with H264 codec for MP4
+    cv::VideoWriter videoWriter;
+    int codec = cv::VideoWriter::fourcc('H', '2', '6', '4');
+    double fps = 20.0;  // Match camera fps from config
+
+    bool opened = videoWriter.open(outputPath, codec, fps,
+                                    cv::Size(frameWidth, frameHeight), true);
+
+    if(!opened)
+    {
+        cerr << "Failed to open video writer for: " << outputPath << endl;
+        return;
+    }
+
+    // Write all frames from buffer
+    for(const auto& record : mFrameBuffer)
+    {
+        if(!record.frame.empty())
+        {
+            videoWriter.write(record.frame);
+        }
+    }
+
+    videoWriter.release();
+    cout << "Video saved successfully with " << mFrameBuffer.size() << " frames" << endl;
+}
 
 
 } //namespace ORB_SLAM

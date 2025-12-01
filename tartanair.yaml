@@ -41,6 +41,8 @@ ORBextractor.nLevels: 8
 
 # ORB Extractor: FAST threshold
 # If no corners are detected with iniThFAST, we use minThFAST
+
+# 这两个值
 ORBextractor.iniThFAST: 20
 ORBextractor.minThFAST: 7
 

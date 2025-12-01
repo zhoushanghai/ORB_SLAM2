@@ -125,6 +125,9 @@ public:
     std::vector<MapPoint*> GetTrackedMapPoints();
     std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
 
+    // Set output directory for tracking failure videos
+    void SetFailureVideoOutputDir(const std::string &outputDir);
+
 private:
 
     // Input sensor

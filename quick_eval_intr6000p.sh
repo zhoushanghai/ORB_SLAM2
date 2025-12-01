@@ -43,7 +43,8 @@ DATASET_ROOT="$SCRIPT_DIR/INTR6000P"
 # Configuration
 ORBSLAM_EXEC="$ORBSLAM_ROOT/Examples/Monocular/mono_euroc"
 VOCABULARY="$ORBSLAM_ROOT/Vocabulary/ORBvoc.txt"
-CAMERA_CONFIG="$DATASET_ROOT/tartanair_1.yaml"
+# CAMERA_CONFIG="$DATASET_ROOT/tartanair_1.yaml"
+CAMERA_CONFIG="/home/hz/intr6000/ORB_SLAM2/tartanair.yaml"
 GT_ROOT="$DATASET_ROOT/INTR6000P_GT_POSES"
 
 # Paths for this sequence
@@ -97,7 +98,7 @@ echo ""
 log_info "Step 1: Running ORB_SLAM2..."
 cd "$ORBSLAM_ROOT"
 
-"$ORBSLAM_EXEC" "$VOCABULARY" "$CAMERA_CONFIG" "$IMAGES_PATH" "$TIMESTAMPS_FILE" > "$LOG_FILE" 2>&1 || {
+"$ORBSLAM_EXEC" "$VOCABULARY" "$CAMERA_CONFIG" "$IMAGES_PATH" "$TIMESTAMPS_FILE" "$OUTPUT_DIR" > "$LOG_FILE" 2>&1 || {
     log_error "ORB_SLAM2 failed! Check log: $LOG_FILE"
     exit 1
 }
