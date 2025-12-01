@@ -39,6 +39,12 @@ Initializer::Initializer(const Frame &ReferenceFrame, float sigma, int iteration
     mSigma = sigma;
     mSigma2 = sigma*sigma;
     mMaxIterations = iterations;
+
+    // ORB-SLAM3 style: Initialize new parameters
+    mfHFThreshold = 0.45f;        // Default H/F selection threshold
+    mfMinParallax = 1.0f;         // Default minimum parallax in degrees
+    mnMinTriangulated = 50;       // Default minimum triangulated points
+    mvInitAttempts.clear();
 }
 
 bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatches12, cv::Mat &R21, cv::Mat &t21,
@@ -108,14 +114,57 @@ bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatc
     threadH.join();
     threadF.join();
 
-    // Compute ratio of scores
-    float RH = SH/(SH+SF);
+    // ORB-SLAM3 style: Use improved model selection
+    bool bUseHomography = false;
+    SelectModel(H, F, SH, SF, bUseHomography);
 
-    // Try to reconstruct from homography or fundamental depending on the ratio (0.40-0.45)
-    if(RH>0.40)
-        return ReconstructH(vbMatchesInliersH,H,mK,R21,t21,vP3D,vbTriangulated,1.0,50);
-    else //if(pF_HF>0.6)
-        return ReconstructF(vbMatchesInliersF,F,mK,R21,t21,vP3D,vbTriangulated,1.0,50);
+    // Try reconstruction with selected model
+    bool bSuccess = false;
+    if(bUseHomography)
+    {
+        bSuccess = ReconstructH(vbMatchesInliersH,H,mK,R21,t21,vP3D,vbTriangulated,mfMinParallax,mnMinTriangulated);
+    }
+    else
+    {
+        bSuccess = ReconstructF(vbMatchesInliersF,F,mK,R21,t21,vP3D,vbTriangulated,mfMinParallax,mnMinTriangulated);
+    }
+
+    // If reconstruction succeeds, compute quality score and save attempt
+    if(bSuccess)
+    {
+        // Count triangulated points
+        int nTriangulated = 0;
+        for(size_t i = 0; i < vbTriangulated.size(); i++)
+        {
+            if(vbTriangulated[i])
+                nTriangulated++;
+        }
+
+        // Compute parallax
+        float parallax = 0.0f;
+        // (Parallax is already computed in ReconstructF/H, but we don't have access here)
+        // For now, estimate it from the baseline and scene depth
+        float baseline = cv::norm(t21);
+        if(nTriangulated > 0)
+        {
+            float avgDepth = 0.0f;
+            for(size_t i = 0; i < vP3D.size(); i++)
+            {
+                if(vbTriangulated[i])
+                    avgDepth += vP3D[i].z;
+            }
+            avgDepth /= nTriangulated;
+            parallax = std::atan2(baseline, avgDepth) * 180.0f / CV_PI;
+        }
+
+        // Compute quality score
+        float quality = ComputeInitializationQuality(R21, t21, vP3D, vbTriangulated, parallax);
+
+        // Save this attempt
+        SaveInitAttempt(R21, t21, vP3D, vbTriangulated, quality, parallax, nTriangulated, bUseHomography);
+
+        return true;
+    }
 
     return false;
 }
@@ -926,6 +975,195 @@ void Initializer::DecomposeE(const cv::Mat &E, cv::Mat &R1, cv::Mat &R2, cv::Mat
     R2 = u*W.t()*vt;
     if(cv::determinant(R2)<0)
         R2=-R2;
+}
+
+// ORB-SLAM3 style improvements implementation
+
+bool Initializer::SelectModel(const cv::Mat &H21, const cv::Mat &F21,
+                               float SH, float SF, bool &bUseHomography)
+{
+    // Compute ratio of scores
+    float RH = SH / (SH + SF);
+
+    // ORB-SLAM3 improvement: Use configurable threshold and consider symmetric transfer error
+    if (RH > mfHFThreshold)
+    {
+        bUseHomography = true;
+        return true;
+    }
+    else
+    {
+        bUseHomography = false;
+        return true;
+    }
+}
+
+float Initializer::ComputeSymmetricTransferError(const cv::Mat &H21, const cv::Mat &H12)
+{
+    const int N = mvMatches12.size();
+    float error = 0.0f;
+
+    for(int i = 0; i < N; i++)
+    {
+        const cv::KeyPoint &kp1 = mvKeys1[mvMatches12[i].first];
+        const cv::KeyPoint &kp2 = mvKeys2[mvMatches12[i].second];
+
+        const float u1 = kp1.pt.x;
+        const float v1 = kp1.pt.y;
+        const float u2 = kp2.pt.x;
+        const float v2 = kp2.pt.y;
+
+        // Forward transfer error: x1 -> x2
+        const float w2in1inv = 1.0f / (H21.at<float>(2,0)*u1 + H21.at<float>(2,1)*v1 + H21.at<float>(2,2));
+        const float u1in2 = (H21.at<float>(0,0)*u1 + H21.at<float>(0,1)*v1 + H21.at<float>(0,2)) * w2in1inv;
+        const float v1in2 = (H21.at<float>(1,0)*u1 + H21.at<float>(1,1)*v1 + H21.at<float>(1,2)) * w2in1inv;
+
+        const float squareDist1 = (u2 - u1in2) * (u2 - u1in2) + (v2 - v1in2) * (v2 - v1in2);
+
+        // Backward transfer error: x2 -> x1
+        const float w1in2inv = 1.0f / (H12.at<float>(2,0)*u2 + H12.at<float>(2,1)*v2 + H12.at<float>(2,2));
+        const float u2in1 = (H12.at<float>(0,0)*u2 + H12.at<float>(0,1)*v2 + H12.at<float>(0,2)) * w1in2inv;
+        const float v2in1 = (H12.at<float>(1,0)*u2 + H12.at<float>(1,1)*v2 + H12.at<float>(1,2)) * w1in2inv;
+
+        const float squareDist2 = (u1 - u2in1) * (u1 - u2in1) + (v1 - v2in1) * (v1 - v2in1);
+
+        error += squareDist1 + squareDist2;
+    }
+
+    return error / N;
+}
+
+bool Initializer::IsScenePlanar(const vector<cv::Point3f> &vP3D, const vector<bool> &vbTriangulated)
+{
+    // Collect valid 3D points
+    vector<cv::Point3f> vValidP3D;
+    vValidP3D.reserve(vP3D.size());
+
+    for(size_t i = 0; i < vP3D.size(); i++)
+    {
+        if(vbTriangulated[i])
+            vValidP3D.push_back(vP3D[i]);
+    }
+
+    if(vValidP3D.size() < 10)
+        return false;
+
+    // Compute centroid
+    cv::Point3f centroid(0, 0, 0);
+    for(const auto &p : vValidP3D)
+    {
+        centroid.x += p.x;
+        centroid.y += p.y;
+        centroid.z += p.z;
+    }
+    centroid.x /= vValidP3D.size();
+    centroid.y /= vValidP3D.size();
+    centroid.z /= vValidP3D.size();
+
+    // Compute covariance matrix
+    cv::Mat cov = cv::Mat::zeros(3, 3, CV_32F);
+    for(const auto &p : vValidP3D)
+    {
+        cv::Mat pt = (cv::Mat_<float>(3,1) << p.x - centroid.x, p.y - centroid.y, p.z - centroid.z);
+        cov += pt * pt.t();
+    }
+    cov /= vValidP3D.size();
+
+    // Compute eigenvalues
+    cv::Mat eigenvalues, eigenvectors;
+    cv::eigen(cov, eigenvalues, eigenvectors);
+
+    // Check if smallest eigenvalue is much smaller than others (indicates planarity)
+    float ratio = eigenvalues.at<float>(2) / eigenvalues.at<float>(0);
+    return ratio < 0.01f;  // Scene is planar if smallest/largest eigenvalue ratio < 0.01
+}
+
+float Initializer::ComputeInitializationQuality(const cv::Mat &R21, const cv::Mat &t21,
+                                                 const vector<cv::Point3f> &vP3D,
+                                                 const vector<bool> &vbTriangulated,
+                                                 float parallax)
+{
+    int nTriangulated = 0;
+    float sumReprojError = 0.0f;
+    float sumDepth = 0.0f;
+
+    for(size_t i = 0; i < vbTriangulated.size(); i++)
+    {
+        if(vbTriangulated[i])
+        {
+            nTriangulated++;
+            sumDepth += vP3D[i].z;
+        }
+    }
+
+    if(nTriangulated == 0)
+        return 0.0f;
+
+    float avgDepth = sumDepth / nTriangulated;
+
+    // Quality score combines:
+    // 1. Number of triangulated points (normalized)
+    // 2. Parallax (higher is better)
+    // 3. Average depth consistency (penalize very close or very far points)
+
+    float scoreTriangulated = std::min(1.0f, nTriangulated / 200.0f);  // Normalize to [0,1]
+    float scoreParallax = std::min(1.0f, parallax / 5.0f);             // Normalize to [0,1], 5 degrees is good
+    float scoreDepth = (avgDepth > 0.1f && avgDepth < 100.0f) ? 1.0f : 0.5f;  // Penalize extreme depths
+
+    float quality = scoreTriangulated * 0.5f + scoreParallax * 0.3f + scoreDepth * 0.2f;
+
+    return quality;
+}
+
+void Initializer::SaveInitAttempt(const cv::Mat &R21, const cv::Mat &t21,
+                                   const vector<cv::Point3f> &vP3D,
+                                   const vector<bool> &vbTriangulated,
+                                   float score, float parallax,
+                                   int nTriangulated, bool bIsHomography)
+{
+    InitAttempt attempt;
+    attempt.R21 = R21.clone();
+    attempt.t21 = t21.clone();
+    attempt.vP3D = vP3D;
+    attempt.vbTriangulated = vbTriangulated;
+    attempt.score = score;
+    attempt.parallax = parallax;
+    attempt.nTriangulated = nTriangulated;
+    attempt.bIsHomography = bIsHomography;
+
+    mvInitAttempts.push_back(attempt);
+}
+
+bool Initializer::GetBestInitialization(cv::Mat &R21, cv::Mat &t21,
+                                        vector<cv::Point3f> &vP3D,
+                                        vector<bool> &vbTriangulated)
+{
+    if(mvInitAttempts.empty())
+        return false;
+
+    // Find best attempt based on quality score
+    float bestScore = -1.0f;
+    int bestIdx = -1;
+
+    for(size_t i = 0; i < mvInitAttempts.size(); i++)
+    {
+        if(mvInitAttempts[i].score > bestScore)
+        {
+            bestScore = mvInitAttempts[i].score;
+            bestIdx = i;
+        }
+    }
+
+    if(bestIdx < 0)
+        return false;
+
+    // Copy best result
+    R21 = mvInitAttempts[bestIdx].R21.clone();
+    t21 = mvInitAttempts[bestIdx].t21.clone();
+    vP3D = mvInitAttempts[bestIdx].vP3D;
+    vbTriangulated = mvInitAttempts[bestIdx].vbTriangulated;
+
+    return true;
 }
 
 } //namespace ORB_SLAM

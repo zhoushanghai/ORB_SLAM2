@@ -48,7 +48,9 @@ namespace ORB_SLAM2
 Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor):
     mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer*>(NULL)), mpSystem(pSys), mpViewer(NULL),
-    mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
+    mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0),
+    mnInitializationAttempts(0), mnMaxInitAttempts(30), mnReferenceFrameAge(0),
+    mnMaxReferenceAge(30), mbInitAttemptInProgress(false)
 {
     // Load camera parameters from settings file
 
@@ -119,6 +121,19 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     int fMinThFAST = fSettings["ORBextractor.minThFAST"];
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
+
+    // Read initialization parameters (ORB-SLAM3 style)
+    cv::FileNode nodeInitMaxAttempts = fSettings["Initialization.MaxAttempts"];
+    if(!nodeInitMaxAttempts.empty())
+        mnMaxInitAttempts = (int)nodeInitMaxAttempts;
+
+    cv::FileNode nodeInitMaxRefAge = fSettings["Initialization.MaxReferenceAge"];
+    if(!nodeInitMaxRefAge.empty())
+        mnMaxReferenceAge = (int)nodeInitMaxRefAge;
+
+    cout << endl << "Initialization Parameters: " << endl;
+    cout << "- Max Attempts: " << mnMaxInitAttempts << endl;
+    cout << "- Max Reference Age: " << mnMaxReferenceAge << endl;
 
     if(sensor==System::STEREO)
         mpORBextractorRight = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
@@ -614,6 +629,7 @@ void Tracking::StereoInitialization()
 
 void Tracking::MonocularInitialization()
 {
+    // ORB-SLAM3 style: Improved initialization with multiple attempts and reference frame aging
 
     if(!mpInitializer)
     {
@@ -633,17 +649,46 @@ void Tracking::MonocularInitialization()
 
             fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
 
+            // Reset initialization tracking
+            mnInitializationAttempts = 0;
+            mnReferenceFrameAge = 0;
+            mbInitAttemptInProgress = true;
+
+            cout << "[Init] Reference frame set with " << mCurrentFrame.mvKeys.size() << " features" << endl;
+
             return;
         }
     }
     else
     {
-        // Try to initialize
-        if((int)mCurrentFrame.mvKeys.size()<=100)
+        // Increment reference frame age
+        mnReferenceFrameAge++;
+
+        // Check if reference frame is too old - reset and try with new reference
+        if(mnReferenceFrameAge > mnMaxReferenceAge)
         {
+            cout << "[Init] Reference frame too old (" << mnReferenceFrameAge
+                 << " frames), resetting..." << endl;
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
             fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
+            mbInitAttemptInProgress = false;
+            return;
+        }
+
+        // Try to initialize
+        if((int)mCurrentFrame.mvKeys.size()<=100)
+        {
+            // Not enough features, but don't reset immediately
+            mnInitializationAttempts++;
+            if(mnInitializationAttempts > mnMaxInitAttempts)
+            {
+                cout << "[Init] Max attempts reached with insufficient features, resetting..." << endl;
+                delete mpInitializer;
+                mpInitializer = static_cast<Initializer*>(NULL);
+                fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
+                mbInitAttemptInProgress = false;
+            }
             return;
         }
 
@@ -651,11 +696,54 @@ void Tracking::MonocularInitialization()
         ORBmatcher matcher(0.9,true);
         int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
 
+        // Increment attempt counter
+        mnInitializationAttempts++;
+
         // Check if there are enough correspondences
         if(nmatches<100)
         {
-            delete mpInitializer;
-            mpInitializer = static_cast<Initializer*>(NULL);
+            cout << "[Init] Attempt " << mnInitializationAttempts << ": Only "
+                 << nmatches << " matches found" << endl;
+
+            // Don't delete initializer immediately - allow multiple attempts
+            if(mnInitializationAttempts >= mnMaxInitAttempts)
+            {
+                // Try to use best initialization attempt if available
+                cv::Mat Rcw, tcw;
+                vector<bool> vbTriangulated;
+
+                if(mpInitializer->GetBestInitialization(Rcw, tcw, mvIniP3D, vbTriangulated))
+                {
+                    cout << "[Init] Using best initialization from "
+                         << mpInitializer->mvInitAttempts.size() << " attempts" << endl;
+
+                    // Update matches based on best result
+                    for(size_t i=0, iend=mvIniMatches.size(); i<iend;i++)
+                    {
+                        if(mvIniMatches[i]>=0 && !vbTriangulated[i])
+                        {
+                            mvIniMatches[i]=-1;
+                        }
+                    }
+
+                    // Set Frame Poses
+                    mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
+                    cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
+                    Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
+                    tcw.copyTo(Tcw.rowRange(0,3).col(3));
+                    mCurrentFrame.SetPose(Tcw);
+
+                    CreateInitialMapMonocular();
+                }
+                else
+                {
+                    cout << "[Init] Max attempts reached, no valid initialization found, resetting..." << endl;
+                    delete mpInitializer;
+                    mpInitializer = static_cast<Initializer*>(NULL);
+                    fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
+                    mbInitAttemptInProgress = false;
+                }
+            }
             return;
         }
 
@@ -665,23 +753,59 @@ void Tracking::MonocularInitialization()
 
         if(mpInitializer->Initialize(mCurrentFrame, mvIniMatches, Rcw, tcw, mvIniP3D, vbTriangulated))
         {
+            // Count triangulated points
+            int nTriangulated = 0;
             for(size_t i=0, iend=mvIniMatches.size(); i<iend;i++)
             {
-                if(mvIniMatches[i]>=0 && !vbTriangulated[i])
+                if(mvIniMatches[i]>=0 && vbTriangulated[i])
+                    nTriangulated++;
+                else if(mvIniMatches[i]>=0 && !vbTriangulated[i])
                 {
                     mvIniMatches[i]=-1;
                     nmatches--;
                 }
             }
 
-            // Set Frame Poses
-            mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
-            cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
-            Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
-            tcw.copyTo(Tcw.rowRange(0,3).col(3));
-            mCurrentFrame.SetPose(Tcw);
+            cout << "[Init] Attempt " << mnInitializationAttempts << ": SUCCESS with "
+                 << nTriangulated << " triangulated points from " << nmatches << " matches" << endl;
 
-            CreateInitialMapMonocular();
+            // Compute quality score for this initialization
+            float baseline = cv::norm(tcw);
+            float avgDepth = 0.0f;
+            for(size_t i=0; i < mvIniP3D.size(); i++)
+            {
+                if(vbTriangulated[i])
+                    avgDepth += mvIniP3D[i].z;
+            }
+            if(nTriangulated > 0)
+                avgDepth /= nTriangulated;
+
+            float parallax = std::atan2(baseline, avgDepth) * 180.0f / CV_PI;
+            cout << "[Init] Quality metrics: baseline=" << baseline << ", parallax=" << parallax << " deg" << endl;
+
+            // Accept if quality is good, or if we've tried many times
+            bool bAcceptInit = (nTriangulated >= 100 && parallax > 1.0f) ||
+                              (mnInitializationAttempts >= mnMaxInitAttempts/2);
+
+            if(bAcceptInit)
+            {
+                // Set Frame Poses
+                mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
+                cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
+                Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
+                tcw.copyTo(Tcw.rowRange(0,3).col(3));
+                mCurrentFrame.SetPose(Tcw);
+
+                CreateInitialMapMonocular();
+            }
+            else
+            {
+                cout << "[Init] Initialization quality not sufficient, continuing attempts..." << endl;
+            }
+        }
+        else
+        {
+            cout << "[Init] Attempt " << mnInitializationAttempts << ": Failed to initialize" << endl;
         }
     }
 }

@@ -59,3 +59,28 @@ Viewer.ViewpointX: 0
 Viewer.ViewpointY: -0.7
 Viewer.ViewpointZ: -1.8
 Viewer.ViewpointF: 500
+
+#--------------------------------------------------------------------------------------------
+# Initialization Parameters (ORB-SLAM3 Style Improvements)
+#--------------------------------------------------------------------------------------------
+
+# Minimum features for initialization
+Initialization.MinFeatures: 100
+
+# Maximum initialization attempts before forcing acceptance
+Initialization.MaxAttempts: 30
+
+# Maximum reference frame age (frames)
+Initialization.MaxReferenceAge: 30
+
+# Minimum parallax for initialization (degrees)
+Initialization.MinParallax: 1.0
+
+# Minimum triangulated points
+Initialization.MinTriangulated: 50
+
+# Homography/Fundamental selection threshold
+Initialization.HFThreshold: 0.45
+
+# Reprojection error threshold (sigma multiplier)
+Initialization.ReprojErrorTh: 4.0

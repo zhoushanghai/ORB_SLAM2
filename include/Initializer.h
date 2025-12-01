@@ -34,6 +34,20 @@ class Initializer
 
 public:
 
+    // Structure to store initialization attempts (ORB-SLAM3 style)
+    struct InitAttempt {
+        cv::Mat R21;
+        cv::Mat t21;
+        vector<cv::Point3f> vP3D;
+        vector<bool> vbTriangulated;
+        float score;
+        float parallax;
+        int nTriangulated;
+        bool bIsHomography;
+
+        InitAttempt() : score(0.0f), parallax(0.0f), nTriangulated(0), bIsHomography(false) {}
+    };
+
     // Fix the reference frame
     Initializer(const Frame &ReferenceFrame, float sigma = 1.0, int iterations = 200);
 
@@ -41,6 +55,14 @@ public:
     // Selects a model and tries to recover the motion and the structure from motion
     bool Initialize(const Frame &CurrentFrame, const vector<int> &vMatches12,
                     cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated);
+
+    // Get best initialization from all attempts (public for Tracking access)
+    bool GetBestInitialization(cv::Mat &R21, cv::Mat &t21,
+                              vector<cv::Point3f> &vP3D,
+                              vector<bool> &vbTriangulated);
+
+    // Store of initialization attempts (public for Tracking access)
+    vector<InitAttempt> mvInitAttempts;
 
 
 private:
@@ -71,6 +93,31 @@ private:
 
     void DecomposeE(const cv::Mat &E, cv::Mat &R1, cv::Mat &R2, cv::Mat &t);
 
+    // ORB-SLAM3 style improvements
+    // Improved model selection using symmetric transfer error
+    bool SelectModel(const cv::Mat &H21, const cv::Mat &F21,
+                     float SH, float SF,
+                     bool &bUseHomography);
+
+    // Compute symmetric transfer error for homography
+    float ComputeSymmetricTransferError(const cv::Mat &H21, const cv::Mat &H12);
+
+    // Check if scene is planar based on reconstructed 3D points
+    bool IsScenePlanar(const vector<cv::Point3f> &vP3D, const vector<bool> &vbTriangulated);
+
+    // Compute quality score for initialization
+    float ComputeInitializationQuality(const cv::Mat &R21, const cv::Mat &t21,
+                                        const vector<cv::Point3f> &vP3D,
+                                        const vector<bool> &vbTriangulated,
+                                        float parallax);
+
+    // Save initialization attempt for later comparison
+    void SaveInitAttempt(const cv::Mat &R21, const cv::Mat &t21,
+                         const vector<cv::Point3f> &vP3D,
+                         const vector<bool> &vbTriangulated,
+                         float score, float parallax,
+                         int nTriangulated, bool bIsHomography);
+
 
     // Keypoints from Reference Frame (Frame 1)
     vector<cv::KeyPoint> mvKeys1;
@@ -92,7 +139,12 @@ private:
     int mMaxIterations;
 
     // Ransac sets
-    vector<vector<size_t> > mvSets;   
+    vector<vector<size_t> > mvSets;
+
+    // Configuration parameters
+    float mfHFThreshold;           // Homography/Fundamental selection threshold (default 0.45)
+    float mfMinParallax;           // Minimum parallax in degrees (default 1.0)
+    int mnMinTriangulated;         // Minimum triangulated points (default 50)
 
 };
 

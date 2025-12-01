@@ -171,6 +171,13 @@ protected:
     // Initalization (only for monocular)
     Initializer* mpInitializer;
 
+    // ORB-SLAM3 style: Improved initialization tracking
+    int mnInitializationAttempts;     // Number of initialization attempts
+    int mnMaxInitAttempts;             // Maximum initialization attempts before forcing
+    int mnReferenceFrameAge;           // Age of reference frame (frames since set)
+    int mnMaxReferenceAge;             // Maximum reference frame age before reset
+    bool mbInitAttemptInProgress;      // Flag indicating initialization in progress
+
     //Local Map
     KeyFrame* mpReferenceKF;
     std::vector<KeyFrame*> mvpLocalKeyFrames;
