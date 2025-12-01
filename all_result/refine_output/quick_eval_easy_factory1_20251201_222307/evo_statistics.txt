@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------------
+Loaded 434 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/easy/factory1.txt
+Loaded 79 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_factory1_20251201_222307/trajectory.txt
+--------------------------------------------------------------------------------
+Synchronizing trajectories...
+Found 79 of max. 79 possible matching timestamps between...
+	/home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/easy/factory1.txt
+and:	/home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_factory1_20251201_222307/trajectory.txt
+..with max. time diff.: 0.01 (s) and time offset: 0.0 (s).
+--------------------------------------------------------------------------------
+Aligning using Umeyama's method... (with scale correction)
+Rotation of alignment:
+[[-0.9347923  -0.13668038 -0.32784423]
+ [-0.35328126  0.45345313  0.81827416]
+ [ 0.03681997  0.88073761 -0.47217111]]
+Translation of alignment:
+[  7.09077399 -30.19614695  -3.01655196]
+Scale correction: 3.707760162628059
+--------------------------------------------------------------------------------
+Compared 79 absolute pose pairs.
+Calculating APE for translation part pose relation...
+--------------------------------------------------------------------------------
+APE w.r.t. translation part (m)
+(with Sim(3) Umeyama alignment)
+
+       max	0.208906
+      mean	0.078901
+    median	0.063733
+       min	0.019291
+      rmse	0.089901
+       sse	0.638494
+       std	0.043091
+
+--------------------------------------------------------------------------------
+Saving results to /home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_factory1_20251201_222307/ape_results.zip...

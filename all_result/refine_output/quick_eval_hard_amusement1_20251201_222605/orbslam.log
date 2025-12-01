@@ -1,0 +1,148 @@
+
+ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza.
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions. See LICENSE.txt.
+
+Input sensor was set to: Monocular
+
+Loading ORB Vocabulary. This could take a while...
+Vocabulary loaded!
+
+
+Camera Parameters: 
+- fx: 320
+- fy: 320
+- cx: 320
+- cy: 240
+- k1: 0
+- k2: 0
+- p1: 0
+- p2: 0
+- fps: 20
+- color order: RGB (ignored if grayscale)
+
+Initialization Parameters: 
+- Max Attempts: 30
+- Max Reference Age: 30
+
+ORB Extractor Parameters: 
+- Number of Features: 2000
+- Scale Levels: 8
+- Scale Factor: 1.2
+- Initial Fast Threshold: 20
+- Minimum Fast Threshold: 7
+
+-------
+Start processing sequence ...
+Images in the sequence: 734
+
+[Init] Reference frame set with 4005 features
+[Init] Attempt 1: Only 97 matches found
+[Init] Attempt 2: Only 76 matches found
+[Init] Attempt 3: Only 40 matches found
+Gtk-Message: 22:26:11.901: Failed to load module "canberra-gtk-module"
+[Init] Attempt 4: Only 21 matches found
+[Init] Attempt 5: Only 19 matches found
+[Init] Attempt 6: Only 8 matches found
+[Init] Attempt 7: Only 11 matches found
+[Init] Attempt 8: Only 7 matches found
+[Init] Attempt 9: Only 7 matches found
+[Init] Attempt 10: Only 5 matches found
+[Init] Attempt 11: Only 4 matches found
+[Init] Attempt 12: Only 2 matches found
+[Init] Attempt 13: Only 6 matches found
+[Init] Attempt 14: Only 4 matches found
+[Init] Attempt 15: Only 3 matches found
+[Init] Attempt 16: Only 3 matches found
+[Init] Attempt 17: Only 3 matches found
+[Init] Attempt 18: Only 4 matches found
+[Init] Attempt 19: Only 1 matches found
+[Init] Attempt 20: Only 4 matches found
+[Init] Attempt 21: Only 2 matches found
+[Init] Attempt 22: Only 5 matches found
+[Init] Attempt 23: Only 2 matches found
+[Init] Attempt 24: Only 3 matches found
+[Init] Attempt 25: Only 3 matches found
+[Init] Attempt 26: Only 2 matches found
+[Init] Attempt 27: Only 3 matches found
+[Init] Attempt 28: Only 4 matches found
+[Init] Attempt 29: Only 4 matches found
+[Init] Attempt 30: Only 5 matches found
+[Init] Max attempts reached, no valid initialization found, resetting...
+[Init] Reference frame set with 4009 features
+[Init] Attempt 1: Failed to initialize
+[Init] Attempt 2: Failed to initialize
+[Init] Attempt 3: Failed to initialize
+[Init] Attempt 4: Only 84 matches found
+[Init] Attempt 5: Only 91 matches found
+[Init] Attempt 6: Only 74 matches found
+[Init] Attempt 7: Only 72 matches found
+[Init] Attempt 8: Only 64 matches found
+[Init] Attempt 9: Only 69 matches found
+[Init] Attempt 10: Only 53 matches found
+[Init] Attempt 11: Only 58 matches found
+[Init] Attempt 12: Only 51 matches found
+[Init] Attempt 13: Only 52 matches found
+[Init] Attempt 14: Only 51 matches found
+[Init] Attempt 15: Only 47 matches found
+[Init] Attempt 16: Only 41 matches found
+[Init] Attempt 17: Only 31 matches found
+[Init] Attempt 18: Only 25 matches found
+[Init] Attempt 19: Only 24 matches found
+[Init] Attempt 20: Only 22 matches found
+[Init] Attempt 21: Only 21 matches found
+[Init] Attempt 22: Only 24 matches found
+[Init] Attempt 23: Only 17 matches found
+[Init] Attempt 24: Only 17 matches found
+[Init] Attempt 25: Only 17 matches found
+[Init] Attempt 26: Only 9 matches found
+[Init] Attempt 27: Only 11 matches found
+[Init] Attempt 28: Only 13 matches found
+[Init] Attempt 29: Only 12 matches found
+[Init] Attempt 30: Only 11 matches found
+[Init] Max attempts reached, no valid initialization found, resetting...
+[Init] Reference frame set with 3976 features
+[Init] Attempt 1: Failed to initialize
+[Init] Attempt 2: Failed to initialize
+[Init] Attempt 3: Failed to initialize
+[Init] Attempt 4: Failed to initialize
+[Init] Attempt 5: Only 97 matches found
+[Init] Attempt 6: Only 88 matches found
+[Init] Attempt 7: Only 80 matches found
+[Init] Attempt 8: Only 78 matches found
+[Init] Attempt 9: Only 71 matches found
+[Init] Attempt 10: Only 64 matches found
+[Init] Attempt 11: Only 67 matches found
+[Init] Attempt 12: Only 62 matches found
+[Init] Attempt 13: Only 63 matches found
+[Init] Attempt 14: Only 61 matches found
+[Init] Attempt 15: Only 59 matches found
+[Init] Attempt 16: Only 50 matches found
+[Init] Attempt 17: Only 49 matches found
+[Init] Attempt 18: Only 48 matches found
+[Init] Attempt 19: Only 31 matches found
+[Init] Attempt 20: Only 34 matches found
+[Init] Attempt 21: Only 29 matches found
+[Init] Attempt 22: Only 26 matches found
+[Init] Attempt 23: Only 18 matches found
+[Init] Attempt 24: Only 22 matches found
+[Init] Attempt 25: Only 16 matches found
+[Init] Attempt 26: Only 13 matches found
+[Init] Attempt 27: Only 15 matches found
+[Init] Attempt 28: Only 11 matches found
+[Init] Attempt 29: Only 13 matches found
+[Init] Attempt 30: Only 12 matches found
+[Init] Max attempts reached, no valid initialization found, resetting...
+[Init] Reference frame set with 3991 features
+[Init] Attempt 1: SUCCESS with 158 triangulated points from 158 matches
+[Init] Quality metrics: baseline=1, parallax=1.16793 deg
+New Map created with 158 points
+-------
+
+median tracking time: 0.0279895
+mean tracking time: 0.0288166
+
+Saving keyframe trajectory to KeyFrameTrajectory.txt ...
+
+trajectory saved!

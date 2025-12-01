@@ -1,0 +1,54 @@
+
+ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza.
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions. See LICENSE.txt.
+
+Input sensor was set to: Monocular
+
+Loading ORB Vocabulary. This could take a while...
+Vocabulary loaded!
+
+
+Camera Parameters: 
+- fx: 320
+- fy: 320
+- cx: 320
+- cy: 240
+- k1: 0
+- k2: 0
+- p1: 0
+- p2: 0
+- fps: 20
+- color order: RGB (ignored if grayscale)
+
+Initialization Parameters: 
+- Max Attempts: 30
+- Max Reference Age: 30
+
+ORB Extractor Parameters: 
+- Number of Features: 2000
+- Scale Levels: 8
+- Scale Factor: 1.2
+- Initial Fast Threshold: 20
+- Minimum Fast Threshold: 7
+
+-------
+Start processing sequence ...
+Images in the sequence: 1314
+
+[Init] Reference frame set with 3615 features
+[Init] Attempt 1: Failed to initialize
+[Init] Attempt 2: Failed to initialize
+[Init] Attempt 3: SUCCESS with 185 triangulated points from 185 matches
+[Init] Quality metrics: baseline=1, parallax=2.1367 deg
+New Map created with 185 points
+Gtk-Message: 22:21:41.545: Failed to load module "canberra-gtk-module"
+-------
+
+median tracking time: 0.0227632
+mean tracking time: 0.0238582
+
+Saving keyframe trajectory to KeyFrameTrajectory.txt ...
+
+trajectory saved!

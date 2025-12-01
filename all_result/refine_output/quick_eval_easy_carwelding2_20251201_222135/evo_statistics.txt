@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------------
+Loaded 1314 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/easy/carwelding2.txt
+Loaded 301 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_carwelding2_20251201_222135/trajectory.txt
+--------------------------------------------------------------------------------
+Synchronizing trajectories...
+Found 301 of max. 301 possible matching timestamps between...
+	/home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/easy/carwelding2.txt
+and:	/home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_carwelding2_20251201_222135/trajectory.txt
+..with max. time diff.: 0.01 (s) and time offset: 0.0 (s).
+--------------------------------------------------------------------------------
+Aligning using Umeyama's method... (with scale correction)
+Rotation of alignment:
+[[-0.92241255 -0.00259469  0.38619729]
+ [ 0.38608658  0.01867158  0.92227356]
+ [-0.00960392  0.9998223  -0.01622112]]
+Translation of alignment:
+[12.73059797  7.51567059 -1.1431756 ]
+Scale correction: 12.232828479705075
+--------------------------------------------------------------------------------
+Compared 301 absolute pose pairs.
+Calculating APE for translation part pose relation...
+--------------------------------------------------------------------------------
+APE w.r.t. translation part (m)
+(with Sim(3) Umeyama alignment)
+
+       max	0.701182
+      mean	0.423906
+    median	0.404118
+       min	0.171081
+      rmse	0.447201
+       sse	60.196665
+       std	0.142451
+
+--------------------------------------------------------------------------------
+Saving results to /home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_carwelding2_20251201_222135/ape_results.zip...

@@ -1,0 +1,84 @@
+
+ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza.
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions. See LICENSE.txt.
+
+Input sensor was set to: Monocular
+
+Loading ORB Vocabulary. This could take a while...
+Vocabulary loaded!
+
+
+Camera Parameters: 
+- fx: 320
+- fy: 320
+- cx: 320
+- cy: 240
+- k1: 0
+- k2: 0
+- p1: 0
+- p2: 0
+- fps: 20
+- color order: RGB (ignored if grayscale)
+
+Initialization Parameters: 
+- Max Attempts: 30
+- Max Reference Age: 30
+
+ORB Extractor Parameters: 
+- Number of Features: 2000
+- Scale Levels: 8
+- Scale Factor: 1.2
+- Initial Fast Threshold: 20
+- Minimum Fast Threshold: 7
+
+-------
+Start processing sequence ...
+Images in the sequence: 563
+
+[Init] Reference frame set with 959 features
+[Init] Attempt 1: Failed to initialize
+[Init] Attempt 2: Only 87 matches found
+[Init] Attempt 3: Only 67 matches found
+Gtk-Message: 22:23:47.262: Failed to load module "canberra-gtk-module"
+[Init] Attempt 4: Only 65 matches found
+[Init] Attempt 5: Only 51 matches found
+[Init] Attempt 6: Only 50 matches found
+[Init] Attempt 7: Only 44 matches found
+[Init] Attempt 8: Only 52 matches found
+[Init] Attempt 9: Only 51 matches found
+[Init] Attempt 10: Only 38 matches found
+[Init] Attempt 11: Only 38 matches found
+[Init] Attempt 12: Only 38 matches found
+[Init] Attempt 13: Only 30 matches found
+[Init] Attempt 14: Only 27 matches found
+[Init] Attempt 15: Only 22 matches found
+[Init] Attempt 16: Only 26 matches found
+[Init] Attempt 17: Only 29 matches found
+[Init] Attempt 18: Only 25 matches found
+[Init] Attempt 19: Only 31 matches found
+[Init] Attempt 20: Only 26 matches found
+[Init] Attempt 21: Only 25 matches found
+[Init] Attempt 22: Only 19 matches found
+[Init] Attempt 23: Only 27 matches found
+[Init] Attempt 24: Only 30 matches found
+[Init] Attempt 25: Only 25 matches found
+[Init] Attempt 26: Only 27 matches found
+[Init] Attempt 27: Only 25 matches found
+[Init] Attempt 28: Only 19 matches found
+[Init] Attempt 29: Only 19 matches found
+[Init] Attempt 30: Only 20 matches found
+[Init] Max attempts reached, no valid initialization found, resetting...
+[Init] Reference frame set with 1896 features
+[Init] Attempt 1: Failed to initialize
+[Init] Attempt 2: SUCCESS with 106 triangulated points from 106 matches
+[Init] Quality metrics: baseline=1, parallax=2.17927 deg
+New Map created with 106 points
+Tracking lost! Recording post-failure frames...
+Saving failure video (3s before + 3s after)...
+Saving tracking failure video to: /home/hz/intr6000/ORB_SLAM2/output/quick_eval_easy_hospital_20251201_222340/tracking_failure_20251201_222358.mp4
+OpenCV: FFMPEG: tag 0x34363248/'H264' is not supported with codec id 27 and format 'mp4 / MP4 (MPEG-4 Part 14)'
+OpenCV: FFMPEG: fallback to use tag 0x31637661/'avc1'
+Video saved successfully with 119 frames
+Video saved. Requesting system shutdown...

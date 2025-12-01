@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------------
+Loaded 1358 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/hard/amusement2.txt
+Loaded 22 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/output/quick_eval_hard_amusement2_20251201_222703/trajectory.txt
+--------------------------------------------------------------------------------
+Synchronizing trajectories...
+Found 22 of max. 22 possible matching timestamps between...
+	/home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/hard/amusement2.txt
+and:	/home/hz/intr6000/ORB_SLAM2/output/quick_eval_hard_amusement2_20251201_222703/trajectory.txt
+..with max. time diff.: 0.01 (s) and time offset: 0.0 (s).
+--------------------------------------------------------------------------------
+Aligning using Umeyama's method... (with scale correction)
+Rotation of alignment:
+[[-0.42470403 -0.72548138  0.54157479]
+ [ 0.87594719 -0.17811484  0.4483209 ]
+ [-0.22878596  0.6647946   0.71112947]]
+Translation of alignment:
+[ -4.68657061 -15.25912306  -1.02941572]
+Scale correction: 4.559927733907792
+--------------------------------------------------------------------------------
+Compared 22 absolute pose pairs.
+Calculating APE for translation part pose relation...
+--------------------------------------------------------------------------------
+APE w.r.t. translation part (m)
+(with Sim(3) Umeyama alignment)
+
+       max	0.019199
+      mean	0.009526
+    median	0.010324
+       min	0.000888
+      rmse	0.010706
+       sse	0.002522
+       std	0.004887
+
+--------------------------------------------------------------------------------
+Saving results to /home/hz/intr6000/ORB_SLAM2/output/quick_eval_hard_amusement2_20251201_222703/ape_results.zip...

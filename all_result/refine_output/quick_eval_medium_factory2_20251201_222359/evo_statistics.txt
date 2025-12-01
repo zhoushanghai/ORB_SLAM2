@@ -1,0 +1,35 @@
+--------------------------------------------------------------------------------
+Loaded 927 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/medium/factory2.txt
+Loaded 190 stamps and poses from: /home/hz/intr6000/ORB_SLAM2/output/quick_eval_medium_factory2_20251201_222359/trajectory.txt
+--------------------------------------------------------------------------------
+Synchronizing trajectories...
+Found 190 of max. 190 possible matching timestamps between...
+	/home/hz/intr6000/ORB_SLAM2/INTR6000P/INTR6000P_GT_POSES/medium/factory2.txt
+and:	/home/hz/intr6000/ORB_SLAM2/output/quick_eval_medium_factory2_20251201_222359/trajectory.txt
+..with max. time diff.: 0.01 (s) and time offset: 0.0 (s).
+--------------------------------------------------------------------------------
+Aligning using Umeyama's method... (with scale correction)
+Rotation of alignment:
+[[ 0.1136483   0.07011931  0.99104356]
+ [ 0.93371989 -0.34838663 -0.08242529]
+ [ 0.33948672  0.93472458 -0.10506535]]
+Translation of alignment:
+[  5.09371175 -27.86444201  -3.1701784 ]
+Scale correction: 4.680786556438453
+--------------------------------------------------------------------------------
+Compared 190 absolute pose pairs.
+Calculating APE for translation part pose relation...
+--------------------------------------------------------------------------------
+APE w.r.t. translation part (m)
+(with Sim(3) Umeyama alignment)
+
+       max	0.431287
+      mean	0.120953
+    median	0.097345
+       min	0.010435
+      rmse	0.147347
+       sse	4.125120
+       std	0.084152
+
+--------------------------------------------------------------------------------
+Saving results to /home/hz/intr6000/ORB_SLAM2/output/quick_eval_medium_factory2_20251201_222359/ape_results.zip...

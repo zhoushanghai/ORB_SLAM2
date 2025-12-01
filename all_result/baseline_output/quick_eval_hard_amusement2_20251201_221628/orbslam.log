@@ -1,0 +1,44 @@
+
+ORB-SLAM2 Copyright (C) 2014-2016 Raul Mur-Artal, University of Zaragoza.
+This program comes with ABSOLUTELY NO WARRANTY;
+This is free software, and you are welcome to redistribute it
+under certain conditions. See LICENSE.txt.
+
+Input sensor was set to: Monocular
+
+Loading ORB Vocabulary. This could take a while...
+Vocabulary loaded!
+
+
+Camera Parameters: 
+- fx: 320
+- fy: 320
+- cx: 320
+- cy: 240
+- k1: 0
+- k2: 0
+- p1: 0
+- p2: 0
+- fps: 20
+- color order: RGB (ignored if grayscale)
+
+ORB Extractor Parameters: 
+- Number of Features: 2000
+- Scale Levels: 8
+- Scale Factor: 1.2
+- Initial Fast Threshold: 20
+- Minimum Fast Threshold: 7
+
+-------
+Start processing sequence ...
+Images in the sequence: 1358
+
+Gtk-Message: 22:16:34.905: Failed to load module "canberra-gtk-module"
+New Map created with 106 points
+Tracking lost! Recording post-failure frames...
+Saving failure video (3s before + 3s after)...
+Saving tracking failure video to: /home/hz/intr6000/ORB_SLAM2/output/quick_eval_hard_amusement2_20251201_221628/tracking_failure_20251201_221743.mp4
+OpenCV: FFMPEG: tag 0x34363248/'H264' is not supported with codec id 27 and format 'mp4 / MP4 (MPEG-4 Part 14)'
+OpenCV: FFMPEG: fallback to use tag 0x31637661/'avc1'
+Video saved successfully with 119 frames
+Video saved. Requesting system shutdown...
